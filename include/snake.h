@@ -10,6 +10,8 @@ private:
     std::vector <SDL_Rect> tail;
 public:
     snake();
+    void render(SDL_Renderer* renderer);
+    ~snake();
 };
 
 #endif // SNAKE_H
