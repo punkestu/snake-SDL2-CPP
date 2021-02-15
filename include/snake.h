@@ -8,9 +8,12 @@ class snake
 private:
     SDL_Rect head;
     std::vector <SDL_Rect> tail;
+    short lcmd;
 public:
     snake();
     void render(SDL_Renderer* renderer);
+    void control(SDL_Event* event);
+    void update();
     ~snake();
 };
 
