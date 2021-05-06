@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <vector>
+#include <stdlib.h>
 
 #define LEFT      0
 #define RIGHT     1
@@ -25,6 +26,16 @@ bool in(SDL_Rect obj, SDL_Rect obj2){
       }
 }
 
+int randx(int min, int max){
+      int ret;
+      srand(SDL_GetTicks()%200*2-rand()-100+50);
+      for(int i = 0; i < 1000; i++){
+            ret = rand();
+      }
+      ret=(ret%(max-min+1))+min;
+      return ret;
+}
+
 class snake{
       private:
             std::vector<tail> tails;
@@ -35,6 +46,7 @@ class snake{
             snake();
             void move();
             void turnit(int dir);
+            bool eat(SDL_Rect food);
             void render(SDL_Renderer* renderer);
 };
 
@@ -96,8 +108,48 @@ void snake::move(){
 }
 
 void snake::turnit(int dir){
-      latestDir = dir;
-      turns.push_back({head.x,head.y,dir});
+      if(dir!=latestDir){
+            int comp;
+            switch (latestDir){
+            case LEFT:
+                  comp = RIGHT;
+                  break;
+            case RIGHT:
+                  comp = LEFT;
+                  break;
+            case UP:
+                  comp = DOWN;
+                  break;
+            case DOWN:
+                  comp = UP;
+                  break;
+            default:
+                  break;
+            }
+            if(dir!=comp){
+                  latestDir = dir;
+                  turns.push_back({head.x,head.y,dir});
+            }
+      }
+}
+
+bool snake::eat(SDL_Rect food){
+      if(in(food,head)){
+            SDL_Rect temp;
+            temp.w = 28;
+            temp.h = 28;
+            switch(tails.back().dir){
+                  case LEFT   : temp.x = tails.back()._tail.x+30;temp.y = tails.back()._tail.y;break;
+                  case RIGHT  : temp.x = tails.back()._tail.x-30;temp.y = tails.back()._tail.y;break;
+                  case UP     : temp.y = tails.back()._tail.y+30;temp.x = tails.back()._tail.x;break;
+                  case DOWN   : temp.y = tails.back()._tail.y-30;temp.x = tails.back()._tail.x;break;
+                  default     : break;
+            }
+            tails.push_back({temp,tails.back().dir});
+            return true;
+      }else{
+            return false;
+      }
 }
 
 void snake::render(SDL_Renderer* renderer){
@@ -105,11 +157,6 @@ void snake::render(SDL_Renderer* renderer){
       SDL_RenderDrawRect(renderer, &head);
       for(uint i = 0; i < tails.size(); i++){
             SDL_RenderDrawRect(renderer, &tails[i]._tail);
-      }
-      SDL_SetRenderDrawColor(renderer, 255,0,0,255);
-      for(uint i = 0; i < turns.size(); i++){
-            SDL_Rect temp = {turns[i].x, turns[i].y, 30,30};
-            SDL_RenderDrawRect(renderer, &temp);
       }
 }
 
@@ -148,6 +195,10 @@ int main(int argc, char* argv[]){
       snake player = snake();
       frm _frm = frm();
 
+      SDL_Rect food = {305,305,20,20};
+      food.x=randx(0,19)*30+5;
+      food.y=randx(0,19)*30+5;
+
       while (true){
             SDL_Event e;
             SDL_PollEvent(&e);
@@ -171,13 +222,21 @@ int main(int argc, char* argv[]){
             }
 
             if(_frm.limit(5)){
+                  if(player.eat(food)){
+                        food.x=randx(0,19)*30+5;
+                        food.y=randx(0,19)*30+5;
+                        SDL_Log("food: %d,%d",food.x,food.y);
+                  }
                   player.move();
             }
+
 
             SDL_SetRenderDrawColor(renderer, 255,255,255,255);
             SDL_RenderClear(renderer);
 
             player.render(renderer);
+            SDL_SetRenderDrawColor(renderer, 255,0,0,255);
+            SDL_RenderFillRect(renderer, &food);
 
             SDL_RenderPresent(renderer);
       }
