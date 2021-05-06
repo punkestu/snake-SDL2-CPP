@@ -68,6 +68,9 @@ void snake::move(){
             for(uint j = 0; j < turns.size(); j++){
                   if(in(tails[i]._tail,{turns[j].x,turns[j].y,30,30})){
                         tails[i].dir = turns[j].dir;
+                        if(i==tails.size()-1 && j == 0){
+                              turns.erase(turns.begin());
+                        }
                         break;
                   }
             }
@@ -90,11 +93,6 @@ void snake::move(){
       default:
             break;
       }
-      if(!turns.empty()){
-            if(in(tails[tails.size()-1]._tail,{turns[turns.size()-1].x,turns[turns.size()-1].x,30,30})){
-                  turns.erase(turns.begin());
-            }
-      }
 }
 
 void snake::turnit(int dir){
@@ -108,6 +106,11 @@ void snake::render(SDL_Renderer* renderer){
       for(uint i = 0; i < tails.size(); i++){
             SDL_RenderDrawRect(renderer, &tails[i]._tail);
       }
+      SDL_SetRenderDrawColor(renderer, 255,0,0,255);
+      for(uint i = 0; i < turns.size(); i++){
+            SDL_Rect temp = {turns[i].x, turns[i].y, 30,30};
+            SDL_RenderDrawRect(renderer, &temp);
+      }
 }
 
 class frm{
@@ -116,10 +119,15 @@ class frm{
       public:
             frm();
             bool limit(uint fps);
+            void overLim(uint i);
 };
 
 frm::frm(){
       _frm = SDL_GetTicks();
+}
+
+void frm::overLim(uint i){
+      _frm = i;
 }
 
 bool frm::limit(uint fps){
@@ -147,12 +155,22 @@ int main(int argc, char* argv[]){
                   break;
             }
             if(e.type == SDL_KEYDOWN){
-                  if(e.key.keysym.sym == SDLK_s){
+                  if(e.key.keysym.sym == SDLK_a){
+                        player.turnit(LEFT);
+                        _frm.overLim(1000);
+                  }else if(e.key.keysym.sym == SDLK_d){
+                        player.turnit(RIGHT);
+                        _frm.overLim(1000);
+                  }else if(e.key.keysym.sym == SDLK_w){
+                        player.turnit(UP);
+                        _frm.overLim(1000);
+                  }else if(e.key.keysym.sym == SDLK_s){
                         player.turnit(DOWN);
+                        _frm.overLim(1000);
                   }
             }
 
-            if(_frm.limit(2)){
+            if(_frm.limit(5)){
                   player.move();
             }
 
