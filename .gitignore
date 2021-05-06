@@ -1,5 +1,2 @@
-/bin
-/obj
-snake.cbp
-snake.depend
-snake.layout
+.vscode
+app
