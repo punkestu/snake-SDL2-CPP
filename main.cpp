@@ -48,6 +48,7 @@ class snake{
             void turnit(int dir);
             bool eat(SDL_Rect food);
             void render(SDL_Renderer* renderer);
+            bool gameOver();
 };
 
 snake::snake(){
@@ -160,6 +161,19 @@ void snake::render(SDL_Renderer* renderer){
       }
 }
 
+bool snake::gameOver(){
+      for(uint i = 0; i < tails.size(); i++){
+            if(in(tails[i]._tail,head)){
+                  return true;
+            }
+      }
+      if(head.x<0 || head.x>600 || head.y<0 || head.y>600){
+            return true;
+      }else{
+            return false;
+      }
+}
+
 class frm{
       private:
             uint _frm;
@@ -199,7 +213,7 @@ int main(int argc, char* argv[]){
       food.x=randx(0,19)*30+5;
       food.y=randx(0,19)*30+5;
 
-      while (true){
+      while (!player.gameOver()){
             SDL_Event e;
             SDL_PollEvent(&e);
             if(e.type == SDL_QUIT){
@@ -240,6 +254,8 @@ int main(int argc, char* argv[]){
 
             SDL_RenderPresent(renderer);
       }
+
+      SDL_Log("Game Over");
       
       SDL_DestroyRenderer(renderer);
       SDL_DestroyWindow(window);
