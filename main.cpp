@@ -207,11 +207,13 @@ int main(int argc, char* argv[]){
       SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
 
       snake player = snake();
+      frm _upd = frm();
       frm _frm = frm();
 
       SDL_Rect food = {305,305,20,20};
       food.x=randx(0,19)*30+5;
       food.y=randx(0,19)*30+5;
+      SDL_Rect lFood = food;
 
       while (!player.gameOver()){
             SDL_Event e;
@@ -222,37 +224,44 @@ int main(int argc, char* argv[]){
             if(e.type == SDL_KEYDOWN){
                   if(e.key.keysym.sym == SDLK_a){
                         player.turnit(LEFT);
-                        _frm.overLim(1000);
+                        _upd.overLim(1000);
                   }else if(e.key.keysym.sym == SDLK_d){
                         player.turnit(RIGHT);
-                        _frm.overLim(1000);
+                        _upd.overLim(1000);
                   }else if(e.key.keysym.sym == SDLK_w){
                         player.turnit(UP);
-                        _frm.overLim(1000);
+                        _upd.overLim(1000);
                   }else if(e.key.keysym.sym == SDLK_s){
                         player.turnit(DOWN);
-                        _frm.overLim(1000);
+                        _upd.overLim(1000);
                   }
             }
 
-            if(_frm.limit(5)){
+            if(_upd.limit(5)){
                   if(player.eat(food)){
-                        food.x=randx(0,19)*30+5;
-                        food.y=randx(0,19)*30+5;
-                        SDL_Log("food: %d,%d",food.x,food.y);
+                        while(true){
+                              food.x=randx(0,19)*30+5;
+                              food.y=randx(0,19)*30+5;
+                              if(food.x != lFood.x || food.y != lFood.y){
+                                    lFood = food;
+                                    SDL_Log("food: %d,%d",food.x,food.y);
+                                    break;
+                              }
+                        }
                   }
                   player.move();
             }
 
+            if(_frm.limit(30)){
+                  SDL_SetRenderDrawColor(renderer, 255,255,255,255);
+                  SDL_RenderClear(renderer);
 
-            SDL_SetRenderDrawColor(renderer, 255,255,255,255);
-            SDL_RenderClear(renderer);
+                  player.render(renderer);
+                  SDL_SetRenderDrawColor(renderer, 255,0,0,255);
+                  SDL_RenderFillRect(renderer, &food);
 
-            player.render(renderer);
-            SDL_SetRenderDrawColor(renderer, 255,0,0,255);
-            SDL_RenderFillRect(renderer, &food);
-
-            SDL_RenderPresent(renderer);
+                  SDL_RenderPresent(renderer);
+            }
       }
 
       SDL_Log("Game Over");
